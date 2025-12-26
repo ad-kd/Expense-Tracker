@@ -60,6 +60,19 @@ const SignUp = () => {
             </div>
 
           </div>
+
+          {error && <p className='text-red-500 text-xs pb-2.5'>{error}</p>}
+          
+                    <button type='submit' className='btn-primary'>
+                      Sign Up
+                    </button>
+          
+                    <p className='text-[13px] text-slate-800 mt-3'>
+                      If you Have an account?{" "}
+                      <Link to="/login" className='font-medium text-primary underline'>
+                        Login            
+                      </Link>
+                    </p>
         </form>
       </div>
     </AuthLayout>
