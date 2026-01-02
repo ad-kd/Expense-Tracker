@@ -7,7 +7,7 @@ const generateToken = (id) => {
 };
 
 //Register User
-exports.registerUser = (req, res) => {
+exports.registerUser = async (req, res) => {
     const { fullName, email, password, profileImageUrl } = req.body;
 
     //validation
@@ -15,20 +15,36 @@ exports.registerUser = (req, res) => {
         return res.status(400).json({ message: "All fields are required" });
     }
 
-    try{
-        //check if user already exists
+    try {
+        //check if email already exists
         const existingUser = await User.findOne({ email });
-        if(existingUser){
-            return res.status(400).json({ message: "Email Already in Use" });
+        if (existingUser) {
+            return res.status(400).json({ message: "Email is already in use "});
         }
-    }
 
-    //create new user
-    
+        //create new user
+        const user = await User.create({
+            fullName,
+            email,
+            password,
+            profileImageUrl,
+        });
+
+        res.status(201).json({
+            id:user._id,
+            user,
+            token: generateToken(user._id),
+        });
+    } catch (err) {
+        res
+        .status(500)
+        .json({ message: "Error on registering user", error: err.message })
+    }
+        
 };
 
 //Login User
-exports.loginUser = (req, res) => {};
+exports.loginUser = (req, res) => { };
 
 //Get User Profile
-exports.getUserInfo = (req, res) => {};
+exports.getUserInfo = (req, res) => { };
