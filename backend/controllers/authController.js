@@ -7,7 +7,7 @@ const generateToken = (id) => {
 };
 
 //Register User
-exports.registerUser = async (req, res) => {
+exports.registerUser = async (req, res,next) => {
     const { fullName, email, password, profileImageUrl } = req.body;
 
     //validation
@@ -44,7 +44,28 @@ exports.registerUser = async (req, res) => {
 };
 
 //Login User
-exports.loginUser = (req, res) => { };
+exports.loginUser = async (req, res) => { 
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ message: "All fields are required" });
+    }
+    try {
+        const user = await User.findOne({ email });
+        if (!user || !(await user.comparePassword(password))) {
+            return res.status(400).json({ message: "Invalid email or password" });
+        }
+
+        res.status(200).json({
+            id: user._id,
+            user,
+            token: generateToken(user._id),
+        });
+    } catch (err) {
+        res
+        .status(500)
+        .json({ message: "Error on registering user", error: err.message })
+    }
+};
 
 //Get User Profile
-exports.getUserInfo = (req, res) => { };
+exports.getUserInfo = async (req, res) => { };
