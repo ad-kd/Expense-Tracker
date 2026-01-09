@@ -68,4 +68,18 @@ exports.loginUser = async (req, res) => {
 };
 
 //Get User Profile
-exports.getUserInfo = async (req, res) => { };
+exports.getUserInfo = async (req, res) => { 
+    try {
+        const user = await User.findById(req.user.id).select("-password");
+
+        if (!user) {
+            return res.status(404).json({ message: "User not Found" });
+        }
+
+        res.status(200).json(user);
+    } catch (err) {
+        res
+        .status(500)
+        .json({ message: "Error on registering User", error: err.message });
+    }
+};
