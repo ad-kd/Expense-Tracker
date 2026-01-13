@@ -4,7 +4,6 @@ const Income = require("../models/Income");
 
 //Add Income Source
 exports.addIncome = async (req, res) => {
-    console.log("Add Income Source Called");
     const userId = req.user.id;
 
     try {
@@ -23,14 +22,12 @@ exports.addIncome = async (req, res) => {
             date: new Date(date)
         });
 
-        console.log(newIncome);
-
         await newIncome.save();
         res.status(200).json(newIncome);
     } catch (error) {
         res.status(500).json({ message: "Server Error" });
     }
-};
+}
 
 //Get All Income Source
 exports.getAllIncome = async (req, res) => {};
@@ -39,4 +36,4 @@ exports.getAllIncome = async (req, res) => {};
 exports.deleteIncome = async (req, res) => {};
 
 //To Download a Income Excel Doc
-exports.deleteIncome = async (req, res) => {};
+exports.downloadIncomeExcel = async (req, res) => {};
