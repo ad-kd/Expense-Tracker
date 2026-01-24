@@ -1,9 +1,13 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import AuthLayout from '../../components/layouts/AuthLayout'
 import { Link, useNavigate } from 'react-router-dom'
 import Input from '../../components/Inputs/Input'
 import { validateEmail } from '../../utils/helper'
 import ProfilePhotoSelector from '../../components/Inputs/ProfilePhotoSelector'
+import axiosInstance from '../../utils/axiosInstance'
+import { API_PATHS } from '../../utils/apiPath'
+import { UserContext } from '../../context/userContext'
+import uploadImage from '../../utils/uploadImage'
 
 const SignUp = () => {
 
@@ -14,13 +18,63 @@ const SignUp = () => {
 
   const [error, setError] = useState(null);
 
+  const {updateUser} = useContext(UserContext);
   const navigate = useNavigate();
 
   //Handle sign up form submit
 
   const handleSignUp = async (e) => {
+    e.preventDefault();
 
-  }
+    let profileImageUrl = "";
+
+    if (!fullName) {
+      setError("Please enter your name");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError("Please enter the valid email address.");
+      return;
+    }
+
+    if (!password) {
+      setError("Please enter the password");
+      return;
+    }
+
+    setError("");
+
+    //Signup API call
+    try {
+      //Uplaod image if present
+      if (profilePic) {
+        const imgUploadRes = await uploadImage(profilePic);
+        profileImageUrl = imgUploadRes.imageUrl || "";
+      }
+
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
+        fullName,
+        email,
+        password,
+        profileImageUrl,
+      });
+      const { token, user } = response.data;
+
+      if (token) {
+        localStorage.setItem("token", token);
+        updateUser(user);
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      if (error.response && error.response.data.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("Something went wrong. Please try again.")
+      }
+    }
+
+  };
 
   return (
     <AuthLayout>
@@ -62,17 +116,17 @@ const SignUp = () => {
           </div>
 
           {error && <p className='text-red-500 text-xs pb-2.5'>{error}</p>}
-          
-                    <button type='submit' className='btn-primary'>
-                      Sign Up
-                    </button>
-          
-                    <p className='text-[13px] text-slate-800 mt-3'>
-                      If you Have an account?{" "}
-                      <Link to="/login" className='font-medium text-primary underline'>
-                        Login            
-                      </Link>
-                    </p>
+
+          <button type='submit' className='btn-primary'>
+            Sign Up
+          </button>
+
+          <p className='text-[13px] text-slate-800 mt-3'>
+            If you Have an account?{" "}
+            <Link to="/login" className='font-medium text-primary underline'>
+              Login
+            </Link>
+          </p>
         </form>
       </div>
     </AuthLayout>
