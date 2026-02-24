@@ -1,68 +1,97 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import axiosInstance from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPath';
-import { useEffect } from 'react';
 import IncomeOverview from '../../components/Income/IncomeOverview';
+import Modal from '../../components/Modal';
+import AddIncomeForm from '../../components/Income/AddIncomeForm';
+import toast from "react-hot-toast";
 
 const Income = () => {
-  const[ incomeData, setIncomeData] = useState([]);
-  const [ loading, setLoading ] = useState(false);
-  const [openDeleteAlert, setOpenDeleteAlert] = useState({
-    show: false,
-    data: null,
-  });
-  const[openAddIncomeModal, setOpenAddIncomeModel] = useState(false);
+
+  const [incomeData, setIncomeData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [openAddIncomeModal, setOpenAddIncomeModel] = useState(false);
 
   // Get All Income Details
-  const fetchIncomeDetails= async () => {
+  const fetchIncomeDetails = async () => {
     if (loading) return;
-
     setLoading(true);
 
     try {
-      const response = await axiosInstance.get(`${API_PATHS.INCOME.GET_ALL_INCOME}`);
+      const response = await axiosInstance.get(API_PATHS.INCOME.GET_ALL_INCOME);
       if (response.data) {
         setIncomeData(response.data);
       }
-    }
-    catch (error) {
-      console.log("Something went wrong. Please Try Again.",error)
-    }
-    finally {
+    } catch (error) {
+      console.log("Something went wrong. Please Try Again.", error);
+    } finally {
       setLoading(false);
     }
   };
 
-  //Handle Add Income
-  const handleAddIncome = async (income) => {};
+  // Handle Add Income
+  const handleAddIncome = async (income) => {
+    const { source, amount, date, icon } = income;
 
-  //Delete Income
-  const deleteIncome = async (id) => {};
+    if (!source.trim()) {
+      toast.error("Source is required.");
+      return;
+    }
 
-  //handle download income details
-  const handleDownloadIncomeDetails = async () => {};
+    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+      toast.error("Please enter a valid amount greater than 0.");
+      return;
+    }
 
+    if (!date) {
+      toast.error("Date is required.");
+      return;
+    }
+
+    try {
+      await axiosInstance.post(API_PATHS.INCOME.ADD_INCOME, {
+        source,
+        amount,
+        date,
+        icon,
+      });
+
+      setOpenAddIncomeModel(false);
+      toast.success("Income added successfully.");
+      fetchIncomeDetails();
+
+    } catch (error) {
+      console.error(
+        "Error adding income:",
+        error.response?.data?.message || error.message
+      );
+    }
+  };
+
+  // Run once when component loads
   useEffect(() => {
     fetchIncomeDetails();
-
-    return () => {};
   }, []);
 
   return (
     <DashboardLayout activeMenu="Income">
       <div className="my-5 mx-auto">
-        <div className="grid grid-cols-1 gap-6">
-          <div className="">
-            <IncomeOverview
-              transactions={incomeData}
-              onAddIncome={() => setOpenAddIncomeModel(true)}
-            />
-          </div>
-        </div>
+        <IncomeOverview
+          transactions={incomeData}
+          onAddIncome={() => setOpenAddIncomeModel(true)}
+        />
+
+        <Modal
+          isOpen={openAddIncomeModal}
+          onClose={() => setOpenAddIncomeModel(false)}
+          title="Add Income"
+        >
+          <AddIncomeForm onAddIncome={handleAddIncome} />
+        </Modal>
       </div>
     </DashboardLayout>
-  )
-}
+  );
+};
 
-export default Income
+export default Income;
