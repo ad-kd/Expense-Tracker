@@ -92,7 +92,26 @@ const Income = () => {
   };
 
   // Handle Download Income Details
-  const handleDownloadIncomeDetails = async () => {};
+  const handleDownloadIncomeDetails = async () => {
+    try {
+      const response = await axiosInstance.get(API_PATHS.INCOME.DOWNLOAD_INCOME,
+        { responseType: 'blob', }
+      );
+
+      //Create a URL for the blob
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "income_details.xlsx");
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading income details:", error);
+      toast.error("Failed to download income details. Please try again.")
+    }
+  };
 
 
   // Run once when component loads
@@ -128,14 +147,14 @@ const Income = () => {
           <AddIncomeForm onAddIncome={handleAddIncome} />
         </Modal>
 
-        <Modal 
+        <Modal
           isOpen={openDeleteAlert.show}
           onClose={() => setOpenDeleteAlert({ show: false, data: null })}
           title="Delete Income"
         >
           <DeleteAlert
-           content='Are You Sure You Want To Delete This Income Detail?'
-           onDelete={() => deleteIncome(openDeleteAlert.data)}
+            content='Are You Sure You Want To Delete This Income Detail?'
+            onDelete={() => deleteIncome(openDeleteAlert.data)}
           />
         </Modal>
       </div>
