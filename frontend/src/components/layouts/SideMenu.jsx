@@ -1,7 +1,7 @@
 import React from 'react'
 import { SIDE_MENU_DATA } from '../../utils/data'
 import { useContext } from 'react'
-import { UserContext } from '../../context/UserContext'
+import { UserContext } from '../../context/userContext'
 import { useNavigate } from 'react-router-dom'
 import CharAvatar from '../Cards/CharAvatar'
 
